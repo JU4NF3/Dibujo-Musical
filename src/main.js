@@ -131,34 +131,47 @@ document.getElementById('randomColor').addEventListener('click', () => {
 });
 
 // Extras: Borrador
-document.getElementById('eraser').disabled = false;
-document.getElementById('eraser').title = 'Borrador';
-document.getElementById('eraser').style.opacity = 1;
-document.getElementById('eraser').style.cursor = 'pointer';
-document.getElementById('eraser').addEventListener('mousedown', () => {
+const eraserBtn = document.getElementById('eraser');
+eraserBtn.disabled = false;
+eraserBtn.title = 'Borrador';
+eraserBtn.style.opacity = 1;
+eraserBtn.style.cursor = 'pointer';
+eraserBtn.addEventListener('mousedown', () => {
     eraserMode = !eraserMode;
-    document.getElementById('eraser').classList.toggle('active', eraserMode);
+    eraserBtn.classList.toggle('active', eraserMode);
+    // Desactivar spray si se activa borrador
+    if (eraserMode) {
+        sprayMode = false;
+        sprayBtn.classList.remove('active');
+    }
 });
 
 // Extras: Simetría horizontal
 let mirrorActive = false;
-document.getElementById('mirror').disabled = false;
-document.getElementById('mirror').title = 'Simetría Horizontal';
-document.getElementById('mirror').style.opacity = 1;
-document.getElementById('mirror').style.cursor = 'pointer';
-document.getElementById('mirror').addEventListener('mousedown', () => {
+const mirrorBtn = document.getElementById('mirror');
+mirrorBtn.disabled = false;
+mirrorBtn.title = 'Simetría Horizontal';
+mirrorBtn.style.opacity = 1;
+mirrorBtn.style.cursor = 'pointer';
+mirrorBtn.addEventListener('mousedown', () => {
     mirrorActive = !mirrorActive;
-    document.getElementById('mirror').classList.toggle('active', mirrorActive);
+    mirrorBtn.classList.toggle('active', mirrorActive);
 });
 
 // Extras: Spray
-document.getElementById('spray').disabled = false;
-document.getElementById('spray').title = 'Spray';
-document.getElementById('spray').style.opacity = 1;
-document.getElementById('spray').style.cursor = 'pointer';
-document.getElementById('spray').addEventListener('mousedown', () => {
+const sprayBtn = document.getElementById('spray');
+sprayBtn.disabled = false;
+sprayBtn.title = 'Spray';
+sprayBtn.style.opacity = 1;
+sprayBtn.style.cursor = 'pointer';
+sprayBtn.addEventListener('mousedown', () => {
     sprayMode = !sprayMode;
-    document.getElementById('spray').classList.toggle('active', sprayMode);
+    sprayBtn.classList.toggle('active', sprayMode);
+    // Desactivar borrador si se activa spray
+    if (sprayMode) {
+        eraserMode = false;
+        eraserBtn.classList.remove('active');
+    }
 });
 
 
