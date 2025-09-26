@@ -11,6 +11,8 @@ let currentOpacity = 1;
 let rainbowMode = false;
 let instrumentType = 'Synth';
 let hue = 0;
+let eraserMode = false;
+let sprayMode = false;
 
 
 
@@ -28,19 +30,55 @@ function setup() {
 function draw() {
     if (isDrawing) {
         let colorToUse = currentColor;
-        if (rainbowMode) {
+        let thicknessToUse = currentThickness;
+        let opacityToUse = currentOpacity;
+        if (eraserMode) {
+            colorToUse = '#fff';
+            opacityToUse = 1;
+            thicknessToUse = currentThickness * 2.5;
+        } else if (rainbowMode) {
             colorMode(HSB);
-            colorToUse = color(hue % 360, 80, 100, currentOpacity);
+            colorToUse = color(hue % 360, 80, 100, opacityToUse);
             hue += 2;
             colorMode(RGB);
         } else {
             colorToUse = color(currentColor);
-            colorToUse.setAlpha(currentOpacity * 255);
+            colorToUse.setAlpha(opacityToUse * 255);
         }
         stroke(colorToUse);
-        strokeWeight(currentThickness);
-        drawing.push({ x: mouseX, y: mouseY, color: colorToUse.toString(), thickness: currentThickness, opacity: currentOpacity });
-        line(pmouseX, pmouseY, mouseX, mouseY);
+        strokeWeight(thicknessToUse);
+        if (sprayMode) {
+            for (let i = 0; i < 20; i++) {
+                let angle = random(TWO_PI);
+                let radius = random(0, thicknessToUse * 2);
+                let sx = mouseX + cos(angle) * radius;
+                let sy = mouseY + sin(angle) * radius;
+                point(sx, sy);
+                drawing.push({ x: sx, y: sy, color: colorToUse.toString(), thickness: 1, opacity: opacityToUse });
+            }
+        } else {
+            line(pmouseX, pmouseY, mouseX, mouseY);
+            drawing.push({ x: mouseX, y: mouseY, color: colorToUse.toString(), thickness: thicknessToUse, opacity: opacityToUse });
+        }
+
+        // Simetría horizontal
+        if (mirrorActive) {
+            let mx = width - mouseX;
+            let pmx = width - pmouseX;
+            if (sprayMode) {
+                for (let i = 0; i < 20; i++) {
+                    let angle = random(TWO_PI);
+                    let radius = random(0, thicknessToUse * 2);
+                    let sx = mx + cos(angle) * radius;
+                    let sy = mouseY + sin(angle) * radius;
+                    point(sx, sy);
+                    drawing.push({ x: sx, y: sy, color: colorToUse.toString(), thickness: 1, opacity: opacityToUse });
+                }
+            } else {
+                line(pmx, pmouseY, mx, mouseY);
+                drawing.push({ x: mx, y: mouseY, color: colorToUse.toString(), thickness: thicknessToUse, opacity: opacityToUse });
+            }
+        }
 
         // Sonar nota en tiempo real
         let note = map(mouseY, 0, height, 72, 48); // MIDI: C5 a C4
@@ -55,15 +93,10 @@ function draw() {
 
 
 
+
 function mousePressed() {
-    // Solo permitir dibujar si el mouse está sobre el canvas
-    const canvasRect = document.getElementById('canvas-container').getBoundingClientRect();
-    if (
-        mouseX >= 0 && mouseX <= width &&
-        mouseY >= 0 && mouseY <= height &&
-        mouseX + canvasRect.left < canvasRect.right &&
-        mouseY + canvasRect.top < canvasRect.bottom
-    ) {
+    // Permitir dibujar en todo el canvas de p5.js
+    if (mouseX >= 0 && mouseX <= width && mouseY >= 0 && mouseY <= height) {
         isDrawing = true;
         Tone.start(); // Asegura que el contexto de audio esté iniciado
     }
@@ -86,15 +119,46 @@ if (sidebar) {
     sidebar.addEventListener('mouseenter', () => { isDrawing = false; });
 }
 
-// Deshabilitar botones de extras que no están implementados
-['randomColor','eraser','mirror','spray'].forEach(id => {
-    const btn = document.getElementById(id);
-    if (btn) {
-        btn.disabled = true;
-        btn.title = 'Próximamente';
-        btn.style.opacity = 0.5;
-        btn.style.cursor = 'not-allowed';
-    }
+// Extras: Color aleatorio
+document.getElementById('randomColor').disabled = false;
+document.getElementById('randomColor').title = 'Color aleatorio';
+document.getElementById('randomColor').style.opacity = 1;
+document.getElementById('randomColor').style.cursor = 'pointer';
+document.getElementById('randomColor').addEventListener('click', () => {
+    let randomColor = '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
+    currentColor = randomColor;
+    document.getElementById('colorPicker').value = randomColor;
+});
+
+// Extras: Borrador
+document.getElementById('eraser').disabled = false;
+document.getElementById('eraser').title = 'Borrador';
+document.getElementById('eraser').style.opacity = 1;
+document.getElementById('eraser').style.cursor = 'pointer';
+document.getElementById('eraser').addEventListener('mousedown', () => {
+    eraserMode = !eraserMode;
+    document.getElementById('eraser').classList.toggle('active', eraserMode);
+});
+
+// Extras: Simetría horizontal
+let mirrorActive = false;
+document.getElementById('mirror').disabled = false;
+document.getElementById('mirror').title = 'Simetría Horizontal';
+document.getElementById('mirror').style.opacity = 1;
+document.getElementById('mirror').style.cursor = 'pointer';
+document.getElementById('mirror').addEventListener('mousedown', () => {
+    mirrorActive = !mirrorActive;
+    document.getElementById('mirror').classList.toggle('active', mirrorActive);
+});
+
+// Extras: Spray
+document.getElementById('spray').disabled = false;
+document.getElementById('spray').title = 'Spray';
+document.getElementById('spray').style.opacity = 1;
+document.getElementById('spray').style.cursor = 'pointer';
+document.getElementById('spray').addEventListener('mousedown', () => {
+    sprayMode = !sprayMode;
+    document.getElementById('spray').classList.toggle('active', sprayMode);
 });
 
 
