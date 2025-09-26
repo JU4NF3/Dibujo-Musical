@@ -10,9 +10,11 @@ let currentThickness = 4;
 let currentOpacity = 1;
 let rainbowMode = false;
 let instrumentType = 'Synth';
+
 let hue = 0;
 let eraserMode = false;
 let sprayMode = false;
+
 
 
 
@@ -22,6 +24,7 @@ function setup() {
     canvas.parent('canvas-container');
     background(255);
     liveSynth = new Tone[instrumentType]().toDestination();
+
 }
 
 
@@ -80,12 +83,11 @@ function draw() {
             }
         }
 
-        // Sonar nota en tiempo real
-        let note = map(mouseY, 0, height, 72, 48); // MIDI: C5 a C4
+        // Sonar nota o ladrido en tiempo real
         if (Tone.context.state !== 'running') {
-            // No hacer nada si el contexto no está iniciado
             return;
         }
+        let note = map(mouseY, 0, height, 72, 48); // MIDI: C5 a C4
         liveSynth.triggerAttackRelease(Tone.Frequency(note, 'midi'), 0.08);
     }
 }
@@ -94,13 +96,16 @@ function draw() {
 
 
 
-function mousePressed() {
+// mousePressed asíncrono para p5.js
+window.mousePressed = async function() {
     // Permitir dibujar en todo el canvas de p5.js
     if (mouseX >= 0 && mouseX <= width && mouseY >= 0 && mouseY <= height) {
         isDrawing = true;
-        Tone.start(); // Asegura que el contexto de audio esté iniciado
+        await Tone.start(); // Asegura que el contexto de audio esté iniciado
     }
 }
+
+
 
 
 
@@ -202,7 +207,17 @@ document.getElementById('rainbow').addEventListener('change', (e) => {
 // Cambiar instrumento
 document.getElementById('instrument').addEventListener('change', (e) => {
     instrumentType = e.target.value;
-    liveSynth = new Tone[instrumentType]().toDestination();
+    if (instrumentType === 'Bark') {
+        if (!barkPlayer) {
+            barkPlayer = new Tone.Player({
+                url: 'https://upload.wikimedia.org/wikipedia/commons/6/6e/Dog-bark.wav',
+                autostart: false,
+                onload: () => { barkPlayer.loaded = true; }
+            }).toDestination();
+        }
+    } else {
+        liveSynth = new Tone[instrumentType]().toDestination();
+    }
 });
 
 
