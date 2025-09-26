@@ -114,10 +114,14 @@ document.getElementById('canvas-container').addEventListener('mouseleave', () =>
 });
 
 // Prevenir que los botones de la barra lateral activen el dibujo
-const sidebar = document.querySelector('.sidebar');
-if (sidebar) {
-    sidebar.addEventListener('mouseenter', () => { isDrawing = false; });
-}
+
+    // Limpiar canvas (botón superior y cualquier otro con id 'clear')
+    document.querySelectorAll('#clear').forEach(btn => {
+        btn.addEventListener('click', () => {
+            background(255);
+            drawing = [];
+        });
+    });
 
 // Extras: Color aleatorio
 document.getElementById('randomColor').disabled = false;
@@ -201,10 +205,10 @@ document.getElementById('instrument').addEventListener('change', (e) => {
     liveSynth = new Tone[instrumentType]().toDestination();
 });
 
-// Limpiar canvas
-document.getElementById('clear').addEventListener('click', () => {
-    background(255);
-    drawing = [];
+
+// Guardar como PNG
+document.getElementById('save').addEventListener('click', () => {
+    saveCanvas('dibujo-musical', 'png');
 });
 
 
